@@ -47,5 +47,27 @@ function runConfig(config, cb) {
 }
 
 function resHandler(res, cb) {
-    // Check if response is valid.
+    /* Check if response is valid
+    // The format of a response handler should be as followed,
+    {
+      "name": A friendly name for a test
+      "url": url of api to test
+      "payload" :{
+        "type" type of data to send
+        "data": {} payload data
+        payload data can be either a format, or a specific response
+      }
+      {
+        type: "format",
+        values: {
+          "name": "string" << define type of data
+          "data" { << can define a deep object
+            "type" << This can be object or array
+            "name": test" << if object,
+            if array a valid type or types can be defined for the elements in the array.
+          }
+        }
+      }
+    }
+    */
 }
