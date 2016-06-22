@@ -1,23 +1,23 @@
 var fs = require("fs");
 var request = require("request");
 var config;
-try {
-  config = JSON.parse(fs.readFileSync("config.json"));
-} catch(e) {
-  console.error("NO CONFIG FILE FOUND");
-  process.exit();
-}
+// try {
+//   config = JSON.parse(fs.readFileSync("config.json"));
+// } catch(e) {
+//   console.error("NO CONFIG FILE FOUND");
+//   process.exit();
+// }
 
-if(config.type == "cli") {
-  for(var i = 2; i < process.argv.length; i++) {
-    var pair = process.argv[2].split("=");
-    if(pair.length != 2) continue;
-    config.params[pair[0]] = pair[1];
-  }
-  runConfig(config);
-} else if (config.type = "static") {
-  runConfig(config);
-}
+// if(config.type == "cli") {
+//   for(var i = 2; i < process.argv.length; i++) {
+//     var pair = process.argv[2].split("=");
+//     if(pair.length != 2) continue;
+//     config.params[pair[0]] = pair[1];
+//   }
+//   runConfig(config);
+// } else if (config.type = "static") {
+//   runConfig(config);
+// }
 
 function runConfig(config, cb) {
   if(config.url) {
@@ -71,3 +71,99 @@ function resHandler(res, cb) {
     }
     */
 }
+
+
+function checkValid(check, data) {
+  if(typeof check.check != "object") {
+    console.error("Must provide a valid object or array to check");
+    return false;
+  }
+  if(data == undefined) {
+    return false;
+  }
+  if(check.type == "static") {
+    for(key in check.check) {
+      if(typeof check.check[key] == "object" && data[key]) {
+        var tmp = {};
+        tmp.type = check.type;
+        tmp.check = check.check[key];
+        var validSub = checkValid(tmp, data[key]);
+        if(!validSub) {
+          return false;
+        }
+      } else {
+        if(check.check[key] != data[key]) {
+          return false;
+        }
+      }
+    }
+  } else if (check.type == "format") {
+    if(Array.isArray(check.check)) {
+      for(var i = 0; i < check.check.length; i++) {
+        if(typeof check.check[i] == "object") {
+          var tmp = {};
+          tmp.type = check.type;
+          tmp.check = check.check[i];
+          var validSub = checkValid(tmp, data[i]);
+          if(!validSub) {
+            return false;
+          }
+        } else {
+          if(!data[check.check[i]]) {
+            return false;
+          }
+        }
+      }
+    } else {
+      console.error("Must provide an array for format!");
+    }
+  } else if(check.type = "typecheck") {
+    for(key in check.check) {
+      if(typeof check.check[key] == "object") {
+        var tmp = {}
+        tmp.type = check.type;
+        tmp.check = check.check[key];
+        var validSub = checkValid(tmp, data[key]);
+        if(!validSub) {
+          return false;
+        }
+      }
+      else if(typeof data[key] != check.check[key]) {
+        console.info("TypeOf data[%s] was %s not %s", key, typeof data[key], check.check[key]);
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+var chk = {
+  type: "typecheck",
+  check: {
+    hello: "string",
+    "world": "string",
+    test: {
+      main: "number",
+      secondary: "number"
+    },
+  }
+}
+
+var a = 1
+a = a << 31;
+a[31] = 0;
+
+b = -2147483648;
+a = ~b;
+console.log(a);
+
+var data = {
+  hello: "man",
+  "world": "'s huh?",
+  test: {
+    main: 1,
+    secondary: 1.1
+  }
+}
+
+console.log(checkValid(chk, data));
