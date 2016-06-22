@@ -149,14 +149,6 @@ var chk = {
   }
 }
 
-var a = 1
-a = a << 31;
-a[31] = 0;
-
-b = -2147483648;
-a = ~b;
-console.log(a);
-
 var data = {
   hello: "man",
   "world": "'s huh?",
